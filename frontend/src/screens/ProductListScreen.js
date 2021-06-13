@@ -35,7 +35,7 @@ const ProductListScreen = ({ history }) => {
 
   const productDelete = useSelector((state) => state.productDelete);
   const {
-    loadig: loadingDelete,
+    loading: loadingDelete,
     success: successDelete,
     error: errorDelete,
   } = productDelete;
@@ -54,6 +54,7 @@ const ProductListScreen = ({ history }) => {
     if (userInfo && !userInfo.isAdmin) {
       history.push('/login');
     }
+
     if (successCreate) {
       history.push(`/admin/product/${createdProduct._id}/edit`);
     } else {

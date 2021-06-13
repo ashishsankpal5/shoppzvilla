@@ -87,6 +87,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     if (req.body.password) {
       user.password = req.body.password;
     }
+    // user.isAdmin = req.body.isAdmin;
 
     const updatedUser = await user.save();
 
@@ -116,9 +117,10 @@ const getUsers = asyncHandler(async (req, res) => {
 //access Private Admins Only
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
+
   if (user) {
     await user.remove();
-    res.json({ messagee: 'User SuccessFully Deleted' });
+    res.json({ message: 'User SuccessFully Deleted' });
   } else {
     res.status(404);
     throw new Error('User Mot Found');

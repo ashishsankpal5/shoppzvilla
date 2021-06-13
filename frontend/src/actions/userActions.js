@@ -58,11 +58,13 @@ export const login = (email, password) => async (dispatch) => {
 
 export const logout = () => async (dispatch) => {
   localStorage.removeItem('userInfo');
+  localStorage.removeItem('shippingAddress');
+  localStorage.removeItem('cartItems');
   dispatch({ type: USER_LOGOUT });
   dispatch({ type: USER_DETAILS_RESET });
   dispatch({ type: ORDER_MY_LIST_RESET });
   dispatch({ type: USER_LIST_RESET });
-  window.loaction = '/login';
+  window.location = '/login';
 };
 
 export const register = (name, email, password) => async (dispatch) => {
@@ -75,16 +77,18 @@ export const register = (name, email, password) => async (dispatch) => {
         'Content-Type': 'application/json',
       },
     };
+
     const { data } = await axios.post(
       '/api/users',
       { name, email, password },
       config
     );
+
     dispatch({ type: USER_REGISTER_SUCCESS, payload: data });
     dispatch({ type: USER_LOGIN_SUCCESS, payload: data });
 
     //set User to LocalStorage
-    // localStorage.setItem('userInfo', JSON.stringify(data));
+    localStorage.setItem('userInfo', JSON.stringify(data));
   } catch (error) {
     dispatch({
       type: USER_REGISTER_FAIL,
@@ -213,6 +217,7 @@ export const deleteUser = (id) => async (dispatch, getState) => {
 export const updateUser = (userData) => async (dispatch, getState) => {
   try {
     dispatch({ type: USER_UPDATE_REQUEST });
+    // console.log(userData);
 
     const {
       userLogin: { userInfo },
@@ -226,10 +231,11 @@ export const updateUser = (userData) => async (dispatch, getState) => {
     };
 
     const { data } = await axios.put(
-      `/api/users${userData._id}`,
+      `/api/users/${userData._id}`,
       userData,
       config
     );
+
     dispatch({ type: USER_UPDATE_SUCCESS });
     dispatch({ type: USER_DETAILS_SUCCESS });
   } catch (error) {

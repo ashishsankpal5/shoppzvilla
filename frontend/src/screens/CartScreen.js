@@ -12,12 +12,10 @@ import {
   Select,
   Button,
   Icon,
-  Alert,
 } from '@chakra-ui/react';
 import { IoTrashBinSharp } from 'react-icons/io5';
 import { addToCart, removeFromCart } from '../actions/cartActions';
 import Message from '../components/Message';
-// import e from 'express';
 
 const CartScreen = ({ match, history, location }) => {
   const productId = match.params.id;
@@ -38,7 +36,7 @@ const CartScreen = ({ match, history, location }) => {
     dispatch(removeFromCart(id));
   };
 
-  const checkOutHandler = (id) => {
+  const checkOutHandler = () => {
     history.push('/login?redirect=shipping');
   };
 

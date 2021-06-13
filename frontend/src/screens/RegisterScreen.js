@@ -24,6 +24,7 @@ const RegisterScreen = ({ location, history }) => {
   const [message, setMessage] = useState(null);
 
   const dispatch = useDispatch();
+
   const userRegister = useSelector((state) => state.userRegister);
   const { loading, error, userInfo } = userRegister;
 
@@ -37,7 +38,6 @@ const RegisterScreen = ({ location, history }) => {
 
   const submitHandler = (e) => {
     e.preventDefault();
-
     //checks if the passwords are equals
     if (password !== confirmPassword) {
       setMessage('Password does not match!');
@@ -46,14 +46,15 @@ const RegisterScreen = ({ location, history }) => {
       dispatch(register(name, email, password));
     }
   };
+
   return (
-    <Flex w="full" alignItems="centet" justifyContent="center" py="5">
+    <Flex w="full" alignItems="center" justifyContent="center" py="5">
       <FormContainer>
         <Heading as="h1" mb="8" fontSize="3xl">
           Sign-Up
         </Heading>
         {message && <Message type="error">{message}</Message>}
-        {error && <Message type="error"> {error}</Message>}
+        {error && <Message type="error">{error}</Message>}
         <form onSubmit={submitHandler}>
           <FormControl id="name" isRequired>
             <FormLabel>Name</FormLabel>
@@ -64,7 +65,6 @@ const RegisterScreen = ({ location, history }) => {
               onChange={(e) => setName(e.target.value)}
             />
           </FormControl>
-
           <Spacer h="3" />
           <FormControl id="email" isRequired>
             <FormLabel>Email</FormLabel>
@@ -101,7 +101,7 @@ const RegisterScreen = ({ location, history }) => {
         </form>
         <Flex pt="5">
           <Text fontWeight="semibold">
-            Have a account? click here to{' '}
+            Have an account? click here to{' '}
             <Link
               as={RouterLink}
               to={redirect ? `/login?redirect=${redirect}` : '/login'}

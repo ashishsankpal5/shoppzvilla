@@ -1,9 +1,5 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import Message from '../components/Message';
-import Loader from '../components/Loader';
-import { listUsers, deleteUser } from '../actions/userActions';
 import {
   Button,
   Flex,
@@ -23,37 +19,32 @@ import {
   IoPencilSharp,
   IoTrashBinSharp,
 } from 'react-icons/io5';
+import { useDispatch, useSelector } from 'react-redux';
+import { listOrders } from '../actions/orderActions';
+import Loader from '../components/Loader';
+import Message from '../components/Message';
 
-const UserListScreen = ({ history }) => {
+const OrderListScreen = ({ history }) => {
   const dispatch = useDispatch();
 
-  const userList = useSelector((state) => state.userList);
-  const { loading, error, users } = userList;
+  const orderList = useSelector((state) => state.orderList);
+  const { loading, error, orders } = orderList;
 
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
 
-  const userDelete = useSelector((state) => state.userDelete);
-  const { success: successDelete } = userDelete;
-
   useEffect(() => {
     if (userInfo && userInfo.isAdmin) {
-      dispatch(listUsers());
+      dispatch(listOrders());
     } else {
       history.push('/login');
     }
-  }, [dispatch, successDelete, history, userInfo]);
-
-  const deleteHandler = (id) => {
-    if (window.confirm('Are you Sure?')) {
-      dispatch(deleteUser(id));
-    }
-  };
+  }, [dispatch, history, userInfo]);
 
   return (
     <>
       <Heading as="h1" fontSize="3xl" mb="5">
-        Users
+        Orders
       </Heading>
       {loading ? (
         <Loader />
@@ -65,28 +56,36 @@ const UserListScreen = ({ history }) => {
             <Thead>
               <Tr>
                 <Th>ID</Th>
-                <Th>NAME</Th>
-                <Th>EMAIL</Th>
-                <Th>ADMIN</Th>
+                <Th>USER</Th>
+                <Th>DATE</Th>
+                <Th>TOTAL PRICE</Th>
+                <Th>PAID</Th>
+                <Th>DELIVERED</Th>
                 <Th></Th>
               </Tr>
             </Thead>
             <Tbody>
-              {users.map((user) => (
-                <Tr key={user._id}>
-                  <Td>{user._id}</Td>
-                  <Td>{user.name}</Td>
+              {orders.map((order) => (
+                <Tr key={order._id}>
+                  <Td>{order._id}</Td>
+                  <Td>{order.user && order.user.name}</Td>
+                  <Td>{order.createdAt.substring(0, 10)}</Td>
+                  <Td>₹{order.totalPrice}</Td>
                   <Td>
-                    <a href={`mailto:${user.email}`}>{user.email}</a>
-                  </Td>
-                  <Td>
-                    {user.isAdmin ? (
+                    {order.isPaid ? (
+                      order.paidAt.substring(0, 10)
+                    ) : (
                       <Icon
-                        as={IoCheckmarkCircleSharp}
-                        color="green.600"
+                        as={IoCloseCircleSharp}
+                        color="red.600"
                         w="8"
                         h="8"
                       />
+                    )}
+                  </Td>
+                  <Td>
+                    {order.isDelivered ? (
+                      order.deliveredAt.substring(0, 10)
                     ) : (
                       <Icon
                         as={IoCloseCircleSharp}
@@ -101,16 +100,10 @@ const UserListScreen = ({ history }) => {
                       <Button
                         mr="4"
                         as={RouterLink}
-                        to={`/admin/user/${user._id}/edit`}
+                        to={`/order/${order._id}`}
                         colorScheme="teal"
                       >
-                        <Icon as={IoPencilSharp} color="white" size="sm" />
-                      </Button>
-                      <Button
-                        colorScheme="red"
-                        onClick={() => deleteHandler(user._id)}
-                      >
-                        <Icon as={IoTrashBinSharp} color="white" size="sm" />
+                        Details
                       </Button>
                     </Flex>
                   </Td>
@@ -124,4 +117,4 @@ const UserListScreen = ({ history }) => {
   );
 };
 
-export default UserListScreen;
+export default OrderListScreen;

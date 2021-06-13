@@ -6,6 +6,7 @@ const protect = asyncHandler(async (req, res, next) => {
   //token will be sent from frontend (Users Browsers) in the request's header Property
   //in the Authentization property
   let token;
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
@@ -21,11 +22,13 @@ const protect = asyncHandler(async (req, res, next) => {
       throw new Error('Not Autherized, Token Failed');
     }
   }
+
   if (!token) {
     res.status(401);
     throw new Error('Not Autherizedd,token failedd');
   }
 });
+
 const admin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();

@@ -1,29 +1,53 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { PayPalButton } from 'react-paypal-button-v2';
 import { Link as RouterLink } from 'react-router-dom';
-import { Flex, Heading, Box, Grid, Text, Image, Link } from '@chakra-ui/react';
+import { PayPalButton } from 'react-paypal-button-v2';
+import {
+  Flex,
+  Heading,
+  Box,
+  Grid,
+  Text,
+  Image,
+  Button,
+  Link,
+} from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
-import { getOrderDetails, payOrder } from '../actions/orderActions';
-import { ORDER_PAY_RESET } from '../constants/orderConstants';
+import {
+  getOrderDetails,
+  payOrder,
+  deliverOrder,
+} from '../actions/orderActions';
+import {
+  ORDER_PAY_RESET,
+  ORDER_DELIVER_RESET,
+  ORDER_DETAILS_RESET,
+} from '../constants/orderConstants';
 
-const OrderScreen = ({ match }) => {
+const OrderScreen = ({ match, history }) => {
   const orderId = match.params.id;
   const dispatch = useDispatch();
 
   const [sdkReady, setSdkReady] = useState(false);
 
-  // GET orderDetails state form REDUX STORE
+  // get the orderDetails state from our store
   const orderDetails = useSelector((state) => state.orderDetails);
   const { order, loading, error } = orderDetails;
 
-  //Paypal
+  // PayPal
   const orderPay = useSelector((state) => state.orderPay);
   const { loading: loadingPay, success: successPay } = orderPay;
 
-  // Final Price Calculated here
+  const orderDeliver = useSelector((state) => state.orderDeliver);
+  const { loading: loadingDeliver, success: successDeliver } = orderDeliver;
+
+  const userLogin = useSelector((state) => state.userLogin);
+  const { userInfo } = userLogin;
+
+  // Calculate Items Price
+  // If we don't put it in !loading we will get an error.
   if (!loading) {
     order.itemsPrice = order.orderItems.reduce(
       (acc, currItem) => acc + currItem.price * (currItem.qty || 1),
@@ -32,9 +56,13 @@ const OrderScreen = ({ match }) => {
   }
 
   useEffect(() => {
+    if (!userInfo) {
+      history.push('/login');
+    }
+
     const addPayPalScript = async () => {
       const { data: clientId } = await axios.get('/api/config/paypal');
-      const script = document.createComment('script');
+      const script = document.createElement('script');
       script.type = 'text/javascript';
       script.async = true;
       script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`;
@@ -43,23 +71,29 @@ const OrderScreen = ({ match }) => {
       };
       document.body.appendChild(script);
     };
-    if (!order || successPay) {
+
+    if (!order || successPay || successDeliver || order._id !== orderId) {
       dispatch({ type: ORDER_PAY_RESET });
+      dispatch({ type: ORDER_DELIVER_RESET });
       dispatch(getOrderDetails(orderId));
     } else if (!order.isPaid) {
-      //see if its not PAID
-      if (window.paypal) {
-        //see if Payal Script is Loaded
+      // see if it's not paid
+      if (!window.paypal) {
+        // see if paypal script is loaded
         addPayPalScript();
       } else {
         setSdkReady(true);
       }
     }
-  }, [dispatch, orderId, successPay, order]);
+  }, [dispatch, orderId, successPay, order, successDeliver]);
 
   const successPaymentHandler = (paymentResult) => {
-    console.log('PayPal Payment Object', paymentResult);
+    console.log('PAYPAL PAYMENT OBJECT', paymentResult);
     dispatch(payOrder(orderId, paymentResult));
+  };
+
+  const deliveryHanlder = () => {
+    dispatch(deliverOrder(order));
   };
 
   return loading ? (
@@ -94,12 +128,12 @@ const OrderScreen = ({ match }) => {
                 {order.shippingAddress.postalCode},{' '}
                 {order.shippingAddress.country}
               </Text>
-              {order.isDelievered ? (
+              {order.isDelivered ? (
                 <Message type="success">
-                  Delievered on {order.delieveredAt}
+                  Delivered on {order.deliveredAt}
                 </Message>
               ) : (
-                <Message type="error">Not Delievered</Message>
+                <Message type="error">Not Delivered</Message>
               )}
             </Box>
 
@@ -176,7 +210,7 @@ const OrderScreen = ({ match }) => {
               <Heading mb="6" as="h2" fontSize="3xl" fontWeight="bold">
                 Order Summary
               </Heading>
-              {/* ITEM PRICE INFO */}
+              {/* Item prices */}
               <Flex
                 borderBottom="1px"
                 py="2"
@@ -189,7 +223,7 @@ const OrderScreen = ({ match }) => {
                   ₹{order.itemsPrice}
                 </Text>
               </Flex>
-              {/* SHIPPING INFO */}
+              {/* Shipping price */}
               <Flex
                 borderBottom="1px"
                 py="2"
@@ -202,7 +236,7 @@ const OrderScreen = ({ match }) => {
                   ₹{order.shippingPrice}
                 </Text>
               </Flex>
-              {/* TAX PRICE INFO */}
+              {/* Tax price */}
               <Flex
                 borderBottom="1px"
                 py="2"
@@ -215,7 +249,7 @@ const OrderScreen = ({ match }) => {
                   ₹{order.taxPrice}
                 </Text>
               </Flex>
-              {/* TOTAL PRICE */}
+              {/* Total price */}
               <Flex py="2" alignItems="center" justifyContent="space-between">
                 <Text fontSize="xl">Total</Text>
                 <Text fontWeight="bold" fontSize="xl">
@@ -224,7 +258,7 @@ const OrderScreen = ({ match }) => {
               </Flex>
             </Box>
 
-            {/* paypal button  */}
+            {/* Will add a paypal button here */}
             {!order.isPaid && (
               <Box>
                 {loadingPay && <Loader />}
@@ -238,6 +272,21 @@ const OrderScreen = ({ match }) => {
                 )}
               </Box>
             )}
+
+            {/* For Admins only */}
+            {loadingDeliver && <Loader />}
+            {userInfo &&
+              userInfo.isAdmin &&
+              order.isPaid &&
+              !order.isDelivered && (
+                <Button
+                  type="button"
+                  colorScheme="teal"
+                  onClick={deliveryHanlder}
+                >
+                  Mark as delivered
+                </Button>
+              )}
           </Flex>
         </Grid>
       </Flex>

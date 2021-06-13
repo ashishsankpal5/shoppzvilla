@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Button,
@@ -11,12 +12,13 @@ import {
   Link,
   Icon,
 } from '@chakra-ui/react';
+import { IoArrowBackOutline } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
-import { IoArrowBackOutline } from 'react-icons/io5';
 import FormContainer from '../components/FormContainer';
-import { listProductDetails } from '../actions/productActions';
+import { listProductDetails, updateProduct } from '../actions/productActions';
+import { PRODUCT_UPDATE_RESET } from '../constants/productConstants';
 
 const ProductEditScreen = ({ match, history }) => {
   const productId = match.params.id;
@@ -28,34 +30,80 @@ const ProductEditScreen = ({ match, history }) => {
   const [countInStock, setCountInStock] = useState(0);
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   const dispatch = useDispatch();
 
   const productDetails = useSelector((state) => state.productDetails);
   const { loading, error, product } = productDetails;
 
+  const productUpdate = useSelector((state) => state.productUpdate);
+  const {
+    loading: loadingUpdate,
+    error: errorUpdate,
+    success: successUpdate,
+  } = productUpdate;
+
   useEffect(() => {
-    if (!product.name || product._id !== productId) {
-      dispatch(listProductDetails(productId));
+    if (successUpdate) {
+      dispatch({ type: PRODUCT_UPDATE_RESET });
+      history.push('/admin/productslist');
     } else {
-      setName(product.name);
-      setPrice(product.price);
-      setImage(product.image);
-      setBrand(product.brand);
-      setCategory(product.category);
-      setCountInStock(product.countInStock);
-      setDescription(product.description);
+      if (!product.name || product._id !== productId) {
+        dispatch(listProductDetails(productId));
+      } else {
+        setName(product.name);
+        setPrice(product.price);
+        setImage(product.image);
+        setBrand(product.brand);
+        setCategory(product.category);
+        setCountInStock(product.countInStock);
+        setDescription(product.description);
+      }
     }
-  }, [dispatch, history, productId, product]);
+  }, [dispatch, history, productId, product, successUpdate]);
 
   const submitHandler = (e) => {
     e.preventDefault();
-    // update Product
+    dispatch(
+      updateProduct({
+        _id: productId,
+        name,
+        price,
+        image,
+        brand,
+        category,
+        description,
+        countInStock,
+      })
+    );
+  };
+
+  const uploadFileHandler = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    setUploading(true);
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+
+      const { data } = await axios.post('/api/upload', formData, config);
+      setImage(data);
+      setUploading(false);
+    } catch (error) {
+      console.error(error);
+      setUploading(false);
+    }
   };
 
   return (
     <>
-      <Link as={RouterLink} to="/admin/userslist">
+      <Link as={RouterLink} to="/admin/productslist">
         <Button colorScheme="black" variant="ghost">
           <Icon as={IoArrowBackOutline} fontSize="3xl" />
         </Button>
@@ -65,6 +113,8 @@ const ProductEditScreen = ({ match, history }) => {
           <Heading as="h1" mb="8" fontSize="3xl">
             Edit Product
           </Heading>
+          {loadingUpdate && <Loader />}
+          {errorUpdate && <Message type="error">{error}</Message>}
           {loading ? (
             <Loader />
           ) : error ? (
@@ -102,7 +152,14 @@ const ProductEditScreen = ({ match, history }) => {
                   value={image}
                   onChange={(e) => setImage(e.target.value)}
                 />
+                <Input
+                  paddingY="1"
+                  type="file"
+                  id="image-file"
+                  onChange={uploadFileHandler}
+                />
               </FormControl>
+              {uploading && <Loader />}
               <Spacer h="3" />
               {/* DESCRIPTION */}
               <FormControl id="text" isRequired>

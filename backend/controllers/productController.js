@@ -14,6 +14,7 @@ const getProducts = asyncHandler(async (request, response) => {
 // @access  public
 const getProductById = asyncHandler(async (request, response) => {
   const product = await Product.findById(request.params.id);
+
   if (product) {
     response.json(product);
   } else {
@@ -24,11 +25,10 @@ const getProductById = asyncHandler(async (request, response) => {
 //@desc  DELETE A PRODUCT
 //@route DELETE /api/products/:id
 //accesss Private/Admin
-
 const deleteProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
+
   if (product) {
-    res.json(product);
     await product.remove();
     res.json({ message: 'Product Removed' });
   } else {
@@ -39,7 +39,6 @@ const deleteProduct = asyncHandler(async (req, res) => {
 //@desc CREATE A PRODUCT
 //@route post/api/products
 //@access Private/Admin
-
 const createProduct = asyncHandler(async (req, res) => {
   const product = new Product({
     name: 'PRODUCT NAME',
@@ -47,7 +46,7 @@ const createProduct = asyncHandler(async (req, res) => {
     user: req.user._id,
     image: '/image/sample.jpg',
     brand: 'Sample Brand',
-    category: 'Sample Category',
+    category: 'Sample Cateogory',
     countInStock: 0,
     numReviews: 0,
     description: 'Sample Description',
@@ -83,12 +82,52 @@ const updateProduct = asyncHandler(async (req, res) => {
   }
 });
 
+//@desc Create new Review
+//@route GET /api/products/:id/reviews
+//@access Private
+const createProductReview = asyncHandler(async (req, res) => {
+  const { rating, comment } = req.body;
+
+  const product = await Product.findById(req.params.id);
+
+  if (product) {
+    const alreadyReviewed = product.reviews.find(
+      (review) => review.user.toString() === req.user._id.toString()
+    );
+
+    if (alreadyReviewed) {
+      res.status(400);
+      throw new Error('Product Alredy Reviewed');
+    }
+
+    const review = {
+      name: req.user.name,
+      rating: Number(rating),
+      comment,
+      user: req.user._id,
+    };
+
+    product.reviews.push(review);
+    product.numReviews = product.reviews.length;
+    product.rating =
+      product.reviews.reduce((acc, curItem) => curItem.rating + acc, 0) /
+      product.reviews.length;
+
+    await product.save();
+    res.json(201).json({ message: 'Review Added' });
+  } else {
+    res.status(404);
+    throw new Error('Product Not Found');
+  }
+});
+
 export {
   getProducts,
   getProductById,
   deleteProduct,
   createProduct,
   updateProduct,
+  createProductReview,
 };
 
 // //-------------Fetching all Products Using Try catch block

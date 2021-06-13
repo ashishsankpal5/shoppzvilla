@@ -11,7 +11,6 @@ import {
   Spacer,
   Link,
   Checkbox,
-  //   CheckboxGroup,
 } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IoArrowBackOutline } from 'react-icons/io5';
@@ -26,7 +25,7 @@ const UserEditScreen = ({ match, history }) => {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [isAdmin, setIsAdmin] = useState('false');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -42,12 +41,12 @@ const UserEditScreen = ({ match, history }) => {
 
   useEffect(() => {
     //Just Cchceck for any of the fields
-    //of user doesn't exist or doesn't match url thn REFETCH
+    //if user doesn't exist or doesn't match url thn REFETCH
     if (successUpdate) {
       dispatch({ type: USER_UPDATE_RESET });
       history.push('/admin/userslist');
     } else {
-      if (!user.name || user._id !== userId) {
+      if (user && (!user.name || user._id !== userId)) {
         dispatch(getUserDetails(userId));
       } else {
         setName(user.name);
@@ -90,7 +89,7 @@ const UserEditScreen = ({ match, history }) => {
                   onChange={(e) => setName(e.target.value)}
                 />
               </FormControl>
-              <Spacer as="h3" />
+              <Spacer h="3" />
               <FormControl id="email" isRequired>
                 <FormLabel>Email Address</FormLabel>
                 <Input
@@ -100,8 +99,8 @@ const UserEditScreen = ({ match, history }) => {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </FormControl>
-              <Spacer as="h3" />
-              <FormControl id="isAdmin" isRequired mt="5">
+              <Spacer h="3" />
+              <FormControl id="isAdmin" isRequired>
                 <FormLabel>wants to make this User as a Admin ?</FormLabel>
                 <Checkbox
                   size="lg"
@@ -112,7 +111,7 @@ const UserEditScreen = ({ match, history }) => {
                   is Admin?
                 </Checkbox>
               </FormControl>
-              <Spacer as="h3" />
+              <Spacer h="3" />
               <Button
                 isLoading={loading}
                 type="submit"

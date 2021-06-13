@@ -29,6 +29,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
       shippingPrice,
       totalPrice,
     });
+
     const createdOrder = await order.save();
     res.status(201).json(createdOrder);
   }
@@ -37,12 +38,12 @@ const addOrderItems = asyncHandler(async (req, res) => {
 // @desc get order By IDD
 // Route GET/api/orders/:id
 //acces private
-
 const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id).populate(
     'user',
     'email name'
   );
+
   if (order) {
     res.json(order);
   } else {
@@ -54,7 +55,6 @@ const getOrderById = asyncHandler(async (req, res) => {
 //@desc Update Order To paid
 //@Route PUT /api/orders/:id/pay
 //@access Private
-
 const updateOrderToPaid = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
@@ -70,18 +70,51 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
     const updatedOrder = await order.save();
     res.json(updatedOrder);
   } else {
-    res.json(404);
+    res.status(404);
     throw new Error('Order Not Found');
   }
 });
 
-//@desc get logged in users order
-//@Route GET/api/orders/myorders
-//@ACCESS Private
-
+//@desc     get logged in users order
+//@Route    GET/api/orders/myorders
+//@ACCESS   Private
 const getMyOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({ user: req.user._id });
   res.json(orders);
 });
 
-export { addOrderItems, getOrderById, updateOrderToPaid, getMyOrders };
+// @desc    Get all orders
+// @route   GET /api/orders
+// @access  private/admin
+const getOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find({}).populate('user', '_id name');
+  res.json(orders);
+});
+
+// @desc    Update order to delivered
+// @route   PUT /api/orders/:id/deliver
+// @access  private/admin
+const updateOrderToDelivered = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+
+  if (order) {
+    order.isDelivered = true;
+    order.deliveredAt = Date.now();
+
+    const updatedOrder = await order.save();
+
+    res.json(updatedOrder);
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+});
+
+export {
+  addOrderItems,
+  getOrderById,
+  updateOrderToPaid,
+  getMyOrders,
+  getOrders,
+  updateOrderToDelivered,
+};

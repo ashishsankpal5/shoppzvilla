@@ -75,7 +75,7 @@ const Header = () => {
             to="/"
             _hover={{ color: 'whiteAlpha.700', textDecor: 'none' }}
           >
-            RST Store
+            Shoppzvilla
           </Link>
         </Heading>
       </Flex>

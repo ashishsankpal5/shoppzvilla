@@ -6,6 +6,8 @@ import {
   ProductDetailReducer,
   productDeleteReducer,
   productCreateReducer,
+  productUpdateReducer,
+  productCreateReviewReducer,
 } from './reducers/productReducer';
 import { cartReducer } from './reducers/cartReducer';
 import {
@@ -22,6 +24,8 @@ import {
   orderDetailsReducer,
   orderPayReducer,
   orderMyListReducer,
+  orderListReducer,
+  orderDeliverReducer,
 } from './reducers/orderReducer';
 
 const reducer = combineReducers({
@@ -29,6 +33,8 @@ const reducer = combineReducers({
   productDetails: ProductDetailReducer,
   productDelete: productDeleteReducer,
   productCreate: productCreateReducer,
+  productUpdate: productUpdateReducer,
+  productReviewCreate: productCreateReviewReducer,
   cart: cartReducer,
   userLogin: userLoginReducer,
   userRegister: userRegisterReducer,
@@ -41,6 +47,8 @@ const reducer = combineReducers({
   orderDetails: orderDetailsReducer,
   orderPay: orderPayReducer,
   orderMyList: orderMyListReducer,
+  orderList: orderListReducer,
+  orderDeliver: orderDeliverReducer,
 });
 
 //get any item that is present in LoaclStorage

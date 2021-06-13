@@ -132,7 +132,9 @@ const ProfileScreen = ({ location, history }) => {
         </form>
       </Flex>
       <Flex direction="column">
-        <Heading as="h2">My Orders</Heading>
+        <Heading as="h2" mb="8">
+          My Orders
+        </Heading>
         {loadingOrders ? (
           <Loader />
         ) : errorOrders ? (
@@ -145,7 +147,7 @@ const ProfileScreen = ({ location, history }) => {
                 <Th>DATE</Th>
                 <Th>TOTAL</Th>
                 <Th>PAID</Th>
-                <Th>DELIEVERED</Th>
+                <Th>DELIVERED</Th>
                 <Th></Th>
               </Tr>
             </Thead>
@@ -164,7 +166,7 @@ const ProfileScreen = ({ location, history }) => {
                   </Td>
                   <Td>
                     {order.isDelivered ? (
-                      order.deleveredAt.substring(0, 10)
+                      order.deliveredAt.substring(0, 10)
                     ) : (
                       <Icon as={IoWarning} color="red" />
                     )}

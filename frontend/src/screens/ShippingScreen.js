@@ -19,7 +19,7 @@ const ShippingScreen = ({ history }) => {
 
   const [address, setAddress] = useState(shippingAddress.address);
   const [city, setCity] = useState(shippingAddress.city);
-  const [postalCode, setPostalCole] = useState(shippingAddress.postalCode);
+  const [postalCode, setPostalCode] = useState(shippingAddress.postalCode);
   const [country, setCountry] = useState(shippingAddress.country);
 
   const dispatch = useDispatch();
@@ -33,7 +33,7 @@ const ShippingScreen = ({ history }) => {
   return (
     <Flex w="full" alignItems="center" justifyContent="center" py="5">
       <FormContainer>
-        <CheckOutSteps step1={true} step2={true} />
+        <CheckOutSteps step1 step2 />
         <Heading as="h1" mb="8" fontSize="3xl">
           Shipping
         </Heading>
@@ -66,10 +66,10 @@ const ShippingScreen = ({ history }) => {
           <FormControl id="postalCode" isRequired>
             <FormLabel>Postal Code</FormLabel>
             <Input
-              placeholder="Enter Postal Code"
               type="number"
+              placeholder="Enter Postal Code"
               value={postalCode}
-              onChange={(e) => setPostalCole(e.target.value)}
+              onChange={(e) => setPostalCode(e.target.value)}
             />
           </FormControl>
           {/* ends */}
